@@ -1,9 +1,7 @@
-version: "3.4"
+version: "3.8"
 
 services:
-  # Publishes crypto data to kafka
   publisher:
-    # ./gradlew kafka-publisher:dockerBuildImage
     image: ghcr.io/deephaven-examples/crypto-application-publisher:${TAG}
     environment:
       DEEPHAVEN_BOOTSTRAP_SERVERS: redpanda:9092
@@ -14,14 +12,9 @@ services:
       resources:
         limits:
           cpus: '4.0'
-          memory: 4500M
-        reservations:
-          memory: 1000M
+          memory: 1500M
 
-  # Consumes crypto data from kafka
   grpc-api:
-    # ./gradlew kafka-consumer:buildDocker
-    # An extension of grpc-api
     image: ghcr.io/deephaven-examples/crypto-application-grpc-api:${TAG}
     environment:
       JAVA_TOOL_OPTIONS: -Xmx4g -Ddeephaven.console.type=python -Ddeephaven.application.dir=/app.d
@@ -41,8 +34,6 @@ services:
       - cache:/cache
 
   web:
-    # ./gradlew kafka-web:buildDocker
-    # An extension of web
     image: ghcr.io/deephaven-examples/crypto-application-web:${TAG}
     deploy:
       resources:
@@ -67,11 +58,10 @@ services:
           cpus: '1'
           memory: 256M
     depends_on:
-      - grpc-api
+      grpc-api:
+        condition: service_healthy
 
   envoy:
-    # A reverse proxy configured for no SSL on localhost. It fronts the requests
-    # for the static content and the websocket proxy.
     image: ghcr.io/deephaven/envoy:0.5.2
     ports:
       - "${PORT}:10000"
@@ -82,9 +72,12 @@ services:
           cpus: '1'
           memory: 256M
     depends_on:
-      - web
-      - grpc-proxy
-      - grpc-api
+      grpc-api:
+        condition: service_healthy
+      grpc-proxy:
+        condition: service_started
+      web:
+        condition: service_started
 
   client:
     image: ghcr.io/deephaven-examples/crypto-application-client:${TAG}
@@ -96,7 +89,10 @@ services:
           cpus: '1.0'
           memory: 512M
     depends_on:
-      - grpc-api
+      grpc-api:
+        condition: service_healthy
+      publisher:
+        condition: service_started
     profiles:
       - donotstart
 

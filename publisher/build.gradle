@@ -39,7 +39,7 @@ application {
     mainClass = 'io.deephaven.crypto.kafka.KafkaPublisher'
     applicationDefaultJvmArgs = [
         '-server',
-        '-Xmx4g',
+        '-Xmx1g',
         '-XX:+UseG1GC',
         '-XX:MaxGCPauseMillis=100',
         '-XshowSettings:vm'
@@ -53,7 +53,7 @@ docker {
         maintainer = project.property('maintainer')
         jvmArgs = [
                 '-server',
-                '-Xmx4g',
+                '-Xmx1g',
                 '-XX:+UseG1GC',
                 '-XX:MaxGCPauseMillis=100',
                 '-XshowSettings:vm'

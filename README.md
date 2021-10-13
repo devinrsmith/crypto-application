@@ -31,6 +31,12 @@ These will launch a self-contained environment, and exposes port 10042 by defaul
 
 To change the defaults, see the [environment file](.env).
 
+The stand-alone client is not started by default. To see it in action, you can run:
+
+```shell
+$ docker-compose up client
+```
+
 ### Development
 
 To build:
