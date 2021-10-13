@@ -23,7 +23,7 @@ services:
   grpc-api:
     # ./gradlew kafka-consumer:buildDocker
     # An extension of grpc-api
-    image: deephaven/crypto-consumer:local-build
+    image: ghcr.io/deephaven-examples/grpc-api-crypto-application:edge
     environment:
       JAVA_TOOL_OPTIONS: -Xmx4g -Ddeephaven.console.type=python -Ddeephaven.application.dir=/app.d
       DEEPHAVEN_BOOTSTRAP_SERVERS: redpanda:9092
@@ -44,7 +44,7 @@ services:
   web:
     # ./gradlew kafka-web:buildDocker
     # An extension of web
-    image: deephaven/crypto-web-app:local-build
+    image: ghcr.io/deephaven-examples/web-crypto-application:edge
     deploy:
       resources:
         limits:
@@ -54,12 +54,12 @@ services:
       - web-tmp:/tmp
 
   redpanda:
-    image: deephaven/redpanda:local-build
+    image: ghcr.io/deephaven-examples/redpanda-crypto-application:edge
     volumes:
       - redpanda:/var/lib/redpanda/data
 
   grpc-proxy:
-    image: deephaven/grpc-proxy:local-build
+    image: ghcr.io/deephaven/grpc-proxy:0.5.1
     environment:
       - BACKEND_ADDR=grpc-api:8080
     deploy:
@@ -73,7 +73,7 @@ services:
   envoy:
     # A reverse proxy configured for no SSL on localhost. It fronts the requests
     # for the static content and the websocket proxy.
-    image: deephaven/envoy:local-build
+    image: ghcr.io/deephaven/envoy:0.5.1
     ports:
       - "10042:10000"
 
