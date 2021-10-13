@@ -1,3 +1,6 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+
 plugins {
     id 'io.deephaven.crypto.java-application-conventions'
     id 'com.bmuschko.docker-java-application' version '7.1.0'
@@ -39,7 +42,6 @@ application {
         '-Xmx4g',
         '-XX:+UseG1GC',
         '-XX:MaxGCPauseMillis=100',
-        '-XX:+UseStringDeduplication',
         '-XshowSettings:vm'
     ]
 }
@@ -48,29 +50,21 @@ docker {
     javaApplication {
         baseImage = base
         images = [ image ]
-        maintainer = 'Devin Smith "devinsmith@deephaven.io"'
+        maintainer = project.property('maintainer')
         jvmArgs = [
-            '-server',
-            '-XX:+UseG1GC',
-            '-XX:MaxGCPauseMillis=100',
-            '-XX:+UseStringDeduplication',
-            // Add for debugging, select port to match what you expect from your debugger/IDE side.
-            // '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005',
-
-            // Settings based on the cgroup limits:
-            // https://www.oracle.com/java/technologies/javase/8u191-relnotes.html
-            // the initial memory reservation, expressed as a percentage of (todo - is this as a percentage against the JVMs computed maximum, or the system memory?)
-            // Note: this feature works w/ cgroups v1, and not cgroups v2 *yet* (except in java 15+).
-            // Maybe we can request backport: https://bugs.openjdk.java.net/browse/JDK-8230305 ?
-            // https://www.redhat.com/sysadmin/fedora-31-control-group-v2
-            '-XX:InitialRAMPercentage=25.0',
-            // the percentage of system memory that the JVM will use as maximum in low-memory systems
-            '-XX:MinRAMPercentage=70.0',
-            // the percentage of system memory that the JVM will use as maximum
-            '-XX:MaxRAMPercentage=80.0',
-            '-XshowSettings:vm'
+                '-server',
+                '-Xmx4g',
+                '-XX:+UseG1GC',
+                '-XX:MaxGCPauseMillis=100',
+                '-XshowSettings:vm'
         ]
     }
+}
+
+project.tasks.register('pushImage', DockerPushImage) {
+    it.dependsOn dockerBuildImage
+    it.inputs.files dockerBuildImage.outputs.files
+    it.images.add(image)
 }
 
 assemble.dependsOn dockerBuildImage

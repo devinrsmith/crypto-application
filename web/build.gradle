@@ -10,6 +10,7 @@ plugins {
 
 String base = project.property('web.base')
 String image = project.property('web.image')
+def labels = [ 'maintainer': project.property('maintainer') ] + project.properties.findAll { it -> it.key.startsWith('org.opencontainers.image.') }
 
 def dockerfileDest = project.layout.buildDirectory.file('docker/Dockerfile')
 def dockerfileDir = project.layout.buildDirectory.dir('prepareDocker')
@@ -21,6 +22,7 @@ def createDockerfile = project.tasks.register('createDockerfile', Dockerfile) {
     // COPY --chown=www-data layouts/ /data/layouts
     it.copyFile 'layouts', '/data/layouts'
     it.runCommand 'chown www-data:www-data /data/layouts'
+    it.label(labels)
     it.destFile.set dockerfileDest
 }
 
@@ -40,7 +42,7 @@ def buildImage = project.tasks.register('buildImage', DockerBuildImage) {
     it.images.add(image)
 }
 
-def deleteImage = project.tasks.register('deleteImage', DockerRemoveImage) {
+project.tasks.register('deleteImage', DockerRemoveImage) {
     it.onlyIf { imageId != null }
     it.imageId.set imageId
     it.force.set true
@@ -53,7 +55,7 @@ def deleteImage = project.tasks.register('deleteImage', DockerRemoveImage) {
     }
 }
 
-def pushImage = project.tasks.register('pushImage', DockerPushImage) {
+project.tasks.register('pushImage', DockerPushImage) {
     DockerBuildImage buildImageTask = buildImage.get()
     it.dependsOn buildImageTask
     it.inputs.files buildImageTask.outputs.files

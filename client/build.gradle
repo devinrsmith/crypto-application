@@ -1,3 +1,5 @@
+import com.bmuschko.gradle.docker.tasks.image.DockerPushImage
+
 plugins {
     id 'io.deephaven.crypto.java-application-conventions'
     id 'com.bmuschko.docker-java-application' version '7.1.0'
@@ -23,9 +25,15 @@ docker {
     javaApplication {
         baseImage = base
         images = [ image ]
-        maintainer = 'Devin Smith "devinsmith@deephaven.io"'
+        maintainer = project.property('maintainer')
         jvmArgs = [ '-Xmx256m' ]
     }
+}
+
+project.tasks.register('pushImage', DockerPushImage) {
+    it.dependsOn dockerBuildImage
+    it.inputs.files dockerBuildImage.outputs.files
+    it.images.add(image)
 }
 
 assemble.dependsOn dockerBuildImage

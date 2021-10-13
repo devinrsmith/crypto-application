@@ -2,11 +2,10 @@ version: "3.4"
 
 services:
   # Publishes crypto data to kafka
-  crypto-publisher:
+  publisher:
     # ./gradlew kafka-publisher:dockerBuildImage
-    image: deephaven/crypto-publisher:local-build
+    image: ghcr.io/deephaven-examples/crypto-application-publisher:${TAG}
     environment:
-      JAVA_TOOL_OPTIONS: -Xmx4g
       DEEPHAVEN_BOOTSTRAP_SERVERS: redpanda:9092
       DEEPHAVEN_SCHEMA_REGISTRY_URL: http://redpanda:8081
     depends_on:
@@ -23,7 +22,7 @@ services:
   grpc-api:
     # ./gradlew kafka-consumer:buildDocker
     # An extension of grpc-api
-    image: ghcr.io/deephaven-examples/grpc-api-crypto-application:edge
+    image: ghcr.io/deephaven-examples/crypto-application-grpc-api:${TAG}
     environment:
       JAVA_TOOL_OPTIONS: -Xmx4g -Ddeephaven.console.type=python -Ddeephaven.application.dir=/app.d
       DEEPHAVEN_BOOTSTRAP_SERVERS: redpanda:9092
@@ -44,7 +43,7 @@ services:
   web:
     # ./gradlew kafka-web:buildDocker
     # An extension of web
-    image: ghcr.io/deephaven-examples/web-crypto-application:edge
+    image: ghcr.io/deephaven-examples/crypto-application-web:${TAG}
     deploy:
       resources:
         limits:
@@ -54,12 +53,12 @@ services:
       - web-tmp:/tmp
 
   redpanda:
-    image: ghcr.io/deephaven-examples/redpanda-crypto-application:edge
+    image: ghcr.io/deephaven-examples/crypto-application-redpanda:${TAG}
     volumes:
       - redpanda:/var/lib/redpanda/data
 
   grpc-proxy:
-    image: ghcr.io/deephaven/grpc-proxy:0.5.1
+    image: ghcr.io/deephaven/grpc-proxy:0.5.2
     environment:
       - BACKEND_ADDR=grpc-api:8080
     deploy:
@@ -73,9 +72,9 @@ services:
   envoy:
     # A reverse proxy configured for no SSL on localhost. It fronts the requests
     # for the static content and the websocket proxy.
-    image: ghcr.io/deephaven/envoy:0.5.1
+    image: ghcr.io/deephaven/envoy:0.5.2
     ports:
-      - "10042:10000"
+      - "${PORT}:10000"
 
     deploy:
       resources:
@@ -88,7 +87,7 @@ services:
       - grpc-api
 
   client:
-    image: deephaven/crypto-client:local-build
+    image: ghcr.io/deephaven-examples/crypto-application-client:${TAG}
     environment:
       DEEPHAVEN_GRPC_API: grpc-api:8080
     deploy:
