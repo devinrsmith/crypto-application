@@ -1,0 +1,56 @@
+{
+  "namespace": "io.deephaven.coinbase",
+  "type": "record",
+  "name": "Match",
+  "fields": [
+    {
+      "name": "trade_id",
+      "type": "long"
+    },
+    {
+      "name": "maker_order_id",
+      "type": { "type": "string", "logicalType": "uuid" }
+    },
+    {
+      "name": "taker_order_id",
+      "type": { "type": "string", "logicalType": "uuid" }
+    },
+    {
+      "name": "time",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-micros"
+      }
+    },
+    {
+      "name": "product_id",
+      "type": "string"
+    },
+    {
+      "name": "size",
+      "type": {
+        "type": "bytes",
+        "logicalType": "decimal",
+        "precision": 16,
+        "scale": 8
+      }
+    },
+    {
+      "name": "price",
+      "type": {
+        "type": "bytes",
+        "logicalType": "decimal",
+        "precision": 16,
+        "scale": 8
+      }
+    },
+    {
+      "name": "side",
+      "type": {
+        "type": "enum",
+        "name": "Side",
+        "symbols" : ["buy", "sell"]
+      }
+    }
+  ]
+}

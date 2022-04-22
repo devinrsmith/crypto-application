@@ -1,11 +1,14 @@
-package io.deephaven.crypto;
+package io.deephaven.coinbase;
 
 import info.bitrich.xchangestream.coinbasepro.CoinbaseProStreamingExchange;
+import io.deephaven.crypto.ImmutableSpecification;
+import io.deephaven.crypto.Specification;
+import io.deephaven.crypto.SpecificationProvider;
 import java.util.Collections;
 import java.util.List;
 import org.knowm.xchange.currency.CurrencyPair;
 
-public class CoinbaseProSpecificationProvider implements SpecificationProvider {
+public class Provider implements SpecificationProvider {
 
   private static final String EXCHANGE_NAME = "coinbase-pro";
 
