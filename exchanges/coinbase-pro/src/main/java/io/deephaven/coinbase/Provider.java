@@ -11,16 +11,17 @@ import org.knowm.xchange.currency.CurrencyPair;
 public class Provider implements SpecificationProvider {
 
   private static final String EXCHANGE_NAME = "coinbase-pro";
+  public static final Specification SPEC =
+      ImmutableSpecification.builder()
+          .exchangeName(EXCHANGE_NAME)
+          .streamingClass(CoinbaseProStreamingExchange.class)
+          .addCurrencyPairs(CurrencyPair.BTC_USD)
+          .addCurrencyPairs(CurrencyPair.ETH_USD)
+          .addCurrencyPairs(CurrencyPair.DOGE_USD)
+          .build();
 
   @Override
   public List<Specification> specifications() {
-    return Collections.singletonList(
-        ImmutableSpecification.builder()
-            .exchangeName(EXCHANGE_NAME)
-            .streamingClass(CoinbaseProStreamingExchange.class)
-            .addCurrencyPairs(CurrencyPair.BTC_USD)
-            .addCurrencyPairs(CurrencyPair.ETH_USD)
-            .addCurrencyPairs(CurrencyPair.DOGE_USD)
-            .build());
+    return Collections.singletonList(SPEC);
   }
 }
