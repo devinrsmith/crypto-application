@@ -1,0 +1,6 @@
+{
+  "name": "Side",
+  "namespace": "io.deephaven.coinbase",
+  "type": "enum",
+  "symbols" : ["buy", "sell"]
+}

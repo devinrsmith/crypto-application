@@ -17,10 +17,7 @@
     },
     {
       "name": "time",
-      "type": {
-        "type": "long",
-        "logicalType": "timestamp-micros"
-      }
+      "type": { "type": "long", "logicalType": "timestamp-micros" }
     },
     {
       "name": "product_id",
@@ -46,11 +43,7 @@
     },
     {
       "name": "side",
-      "type": {
-        "type": "enum",
-        "name": "Side",
-        "symbols" : ["buy", "sell"]
-      }
+      "type": "Side"
     }
   ]
 }
