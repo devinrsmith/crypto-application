@@ -6,15 +6,17 @@ import info.bitrich.xchangestream.core.ProductSubscription;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.subject.TopicRecordNameStrategy;
 import io.reactivex.Observable;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.knowm.xchange.currency.CurrencyPair;
+
+import java.io.IOException;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import org.apache.avro.util.Utf8;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerConfig;
-import org.knowm.xchange.currency.CurrencyPair;
 
 public class MatchPublisher {
 
@@ -45,30 +47,40 @@ public class MatchPublisher {
         .setMakerOrderId(UUID.fromString(m.getMakerOrderId()))
         .setTakerOrderId(UUID.fromString(m.getTakerOrderId()))
         .setTime(Instant.parse(m.getTime()))
-        .setProductId(new Utf8(m.getProductId()))
+        .setProductId(m.getProductId())
         .setSize(m.getSize())
         .setPrice(m.getPrice())
         .setSide(Side.valueOf(m.getSide()))
         .build();
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
 
-    final CurrencyPair pair = CurrencyPair.BTC_USD;
     final String bootstrapServers = "localhost:9092";
     final String schemaRegistryUrl = "http://localhost:8081";
 
     CoinbaseProStreamingExchange e = new CoinbaseProStreamingExchange();
     e.applySpecification(e.getDefaultExchangeSpecification());
 
-    if (!e.connect(ProductSubscription.create().addTrades(pair).build())
+    e.remoteInit();
+    List<CurrencyPair> pairs = e.getExchangeSymbols();
+
+    ProductSubscription.ProductSubscriptionBuilder s = ProductSubscription.create();
+    for (CurrencyPair p : pairs) {
+      s.addTrades(p);
+    }
+    if (!e.connect(s.build())
         .blockingAwait(10, TimeUnit.SECONDS)) {
       throw new RuntimeException();
     }
 
+
     KafkaProducer<String, Match> producer = createProducer(bootstrapServers, schemaRegistryUrl);
-    MatchObserver observer = new MatchObserver(producer);
-    new MatchPublisher(e).matches(pair).safeSubscribe(observer);
+
+    for (CurrencyPair pair : pairs) {
+      MatchObserver observer = new MatchObserver(producer);
+      new MatchPublisher(e).matches(pair).safeSubscribe(observer);
+    }
   }
 
   private static KafkaProducer<String, Match> createProducer(

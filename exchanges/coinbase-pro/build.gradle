@@ -27,7 +27,7 @@ dependencies {
 
 avro {
     customConversion(Conversions.UUIDConversion.class)
-    stringType = "Utf8"
+//    stringType = "Utf8"
 }
 
 spotless {

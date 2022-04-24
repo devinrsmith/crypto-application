@@ -10,6 +10,8 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 
 public class MatchObserver implements Observer<Match>, Callback {
 
+  private static final String TOPIC = "io.deephaven.coinbase";
+
   private final KafkaProducer<String, Match> producer;
   private Disposable disposable;
 
@@ -24,10 +26,12 @@ public class MatchObserver implements Observer<Match>, Callback {
 
   @Override
   public void onNext(Match match) {
-    System.out.println(match);
-
-    String key = match.getProductId().toString(); // todo: save string so no alloc
-    producer.send(new ProducerRecord<>(Match.class.getName(), key, match), this);
+    try {
+      producer.send(new ProducerRecord<>(TOPIC, match.getProductId(), match), this);
+    } catch (RuntimeException e) {
+      e.printStackTrace();
+      throw new E("Unable to serialize " + match, e);
+    }
   }
 
   @Override
@@ -43,6 +47,12 @@ public class MatchObserver implements Observer<Match>, Callback {
     if (exception != null) {
       exception.printStackTrace();
       disposable.dispose();
+    }
+  }
+
+  private static class E extends RuntimeException {
+    public E(String message, Throwable cause) {
+      super(message, cause);
     }
   }
 }
