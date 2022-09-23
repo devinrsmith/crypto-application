@@ -1,0 +1,20 @@
+# Copy this file to /etc/systemd/system/
+# and then reload systemd (sudo systemctl daemon-reload)
+
+[Unit]
+Description=Deephaven Kafka publisher service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+KillMode=control-group
+StandardOutput=journal
+StandardError=journal
+User=root
+ExecStart=/home/devin/kafka-publisher/kafka-publisher-0.0.1/bin/kafka-publisher
+
+[Install]
+WantedBy=multi-user.target
